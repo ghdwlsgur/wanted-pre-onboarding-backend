@@ -1,8 +1,8 @@
 version: "3"
 services:
   nginx:
-    container_name: hjh-board-nginx
-    image: nginx:1.21.4
+    container_name: board-nginx
+    image: nginx:latest
     ports:
       - 80:80
     command: [nginx-debug, "-g", "daemon off;"]
@@ -13,19 +13,19 @@ services:
     networks:
       - nginx_network
   flask:
-    container_name: hjh-board-flask
-    image: test:latest
+    container_name: board-flask
+    image: flask:latest
     restart: always
     ports:
       - 8080:8080
     depends_on:
-      - "mysql"
+      - mysql
     volumes:
       - ./:/code
     links:
       - mysql
     environment:
-      - MYSQL_HOST=localhost
+      - MYSQL_HOST=mysql
       - MYSQL_USER=root
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=PROJECT
@@ -33,22 +33,24 @@ services:
       - MYSQL_PORT=3306
     networks:
       - nginx_network
-      - hjh-board-network
+      - private_network
   mysql:
-    container_name: hjh-board-mysql
+    container_name: board-mysql
     image: mysql:8.0
     restart: always
     ports:
-      - 3000:3000
+      - 3306:3306
     volumes:
       - mysql:/var/lib/mysql
     networks:
-      - hjh-board-network
+      - private_network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
 volumes:
   mysql:
 
 networks:
-  hjh-board-network:
+  private_network:
     driver: bridge
   nginx_network:
     external: true
