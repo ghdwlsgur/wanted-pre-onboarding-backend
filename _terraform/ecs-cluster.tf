@@ -44,7 +44,7 @@ resource "aws_launch_configuration" "board" {
   name_prefix     = "${var.AWS_RESOURCE_PREFIX}-launch-configuration"
   security_groups = [aws_security_group.instance-sg.id]
 
-  key_name                    = aws_key_pair.kali.key_name
+  key_name                    = aws_key_pair.ecs_agent_key.key_name
   image_id                    = var.ECS_AMI
   instance_type               = var.INSTANCE_TYPE
   iam_instance_profile        = aws_iam_instance_profile.ecs-ec2-role.id
@@ -52,9 +52,15 @@ resource "aws_launch_configuration" "board" {
   associate_public_ip_address = true
 
   provisioner "local-exec" {
-    command = "terraform output -raw ssh_private_key > ~/.ssh/${aws_key_pair.kali.key_name}.pem && chmod 400 ~/.ssh/${aws_key_pair.kali.key_name}.pem"
+    command = "terraform output -raw ssh_private_key > ~/.ssh/${aws_key_pair.ecs_agent_key.key_name}.pem && chmod 400 ~/.ssh/${aws_key_pair.ecs_agent_key.key_name}.pem"
   }
 
+  provisioner "local-exec" {
+    when        = destroy
+    command     = "rm -rf ~/.ssh/${self.key_name}.pem"
+    working_dir = path.module
+    on_failure  = continue
+  }
 
   lifecycle {
     create_before_destroy = true
@@ -67,7 +73,7 @@ resource "tls_private_key" "tls" {
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "kali" {
-  key_name   = "kali"
+resource "aws_key_pair" "ecs_agent_key" {
+  key_name   = "${var.AWS_RESOURCE_PREFIX}_${var.AWS_REGION}"
   public_key = tls_private_key.tls.public_key_openssh
 }
