@@ -2,7 +2,7 @@ version: "3"
 services:
   nginx:
     container_name: board-nginx
-    image: redmax45/nginx:board-v1
+    image: ${DOCKER_USERNAME}/nginx:board-v1
     ports:
       - 80:80
     command: [nginx-debug, "-g", "daemon off;"]
@@ -14,7 +14,7 @@ services:
       - nginx_network
   flask:
     container_name: board-flask
-    image: redmax45/flask:board-v1
+    image: ${DOCKER_USERNAME}/flask:board-v1
     restart: always
     ports:
       - 8080:8080
@@ -36,15 +36,14 @@ services:
       - private_network
   mysql:
     container_name: board-mysql
-    image: mysql:8.0
+    image: mysql:8.0.19
     restart: always
     ports:
       - 3306:3306
-    volumes:
-      - ./scripts/initdb.d/schema.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - private_network
     environment:
+      - MYSQL_DATABASE=PROJECT
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
 volumes:
   mysql:
