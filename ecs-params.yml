@@ -1,0 +1,13 @@
+version:
+task_definition:
+  ecs_network_mode: bridge
+  services:
+    nginx:
+      cpu_shares: 2000
+      mem_limit: 2008435456
+    flask:
+      cpu_shares: 2000
+      mem_limit: 2008435456
+    mysql:
+      cpu_shares: 2000
+      mem_limit: 2008435456
