@@ -14,6 +14,5 @@ ENV MYSQL_HOST $MYSQL_HOST
 ENV MYSQL_DATABASE $MYSQL_DATABASE
 ENV JWT_SECRET_KEY $JWT_SECRET_KEY
 CMD ["./start.sh"]
-# CMD ["/bin/sh", "-c", "flask db upgrade && gunicorn -w 4 -b 0.0.0.0:8080 'board:create_app()'"]
 
 
