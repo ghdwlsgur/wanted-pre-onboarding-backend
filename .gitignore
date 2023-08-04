@@ -1,14 +1,23 @@
+# Mac
 .DS_Store
+
+# flask 
 __pycache__
 include
 lib
 bin
 pyvenv.cfg
 
-
+# terraform state 
 .terraform
 terraform.tfstate 
 terraform.tfstate.backup
+
+# terraform locking state file
 .terraform.tfstate.lock.info
+
+# terraform variable
 terraform.tfvars
+
+# infracost (billing)
 .infracost
