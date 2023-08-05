@@ -12,9 +12,9 @@ board_model = api.model("Board", {
   "userId": fields.String(description='유저 고유 아이디', required=True),
   "title": fields.String(description='제목', required=True),
   "content": fields.String(description='내용', required=True),
-  "created_at": fields.DateTime(description='생성일'),
-  "updated_at": fields.DateTime(description='수정일'),
-  "deleted_at": fields.DateTime(description='삭제일'),
+  "created_at": fields.DateTime(description='생성일 (KST)'),
+  "updated_at": fields.DateTime(description='수정일 (KST)'),
+  "deleted_at": fields.DateTime(description='삭제일 (KST)'),
 })
 
 res_model = api.model("BoardResponse", {

@@ -10,6 +10,7 @@ from sqlalchemy.exc import DBAPIError
 
 from flask_jwt_extended import create_access_token
 import uuid 
+from .board import ConvertTime
 
 ns = Namespace("api/user")
 
@@ -26,7 +27,7 @@ class UserData:
         'id': self.id,
         'email': self.email,
         'password': self.password,
-        'created_at': self.created_at
+        'created_at': ConvertTime.utc_to_kst(self.created_at)
       }
       
 # 회원가입 응답 클래스
@@ -110,7 +111,7 @@ class Login(Resource):
       return response_data.to_dict()      
     else:
       access_token = create_access_token(identity=user.id)
-      response_data = LoginResponseData("Login Success", 200, access_token)
+      response_data = LoginResponseData("Success", 200, access_token)
       return response_data.to_dict()      
         
 
@@ -153,14 +154,14 @@ class SignUp(Resource):
     
     try:      
       db.session.add(user)
-      db.session.commit()
-    except DBAPIError:
+      db.session.commit()    
+    except DBAPIError as error:      
       db.session.rollback()
-      response_data = ResponseData("Database error", 500, None)
-      return response_data.to_dict(), 500
+      response_data = ResponseData("Database error:" + str(error), 500, None)
+      return response_data.to_dict(), 500       
     
     user_data = UserData(user.id, user.email, user.password, user.created_at)
-    response_data = ResponseData("Regist Success", 200, user_data)
+    response_data = ResponseData("Success", 200, user_data)
     return response_data.to_dict(), 200 
       
   def generate_unique_id(self) -> str:

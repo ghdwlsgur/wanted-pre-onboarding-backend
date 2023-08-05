@@ -5,6 +5,9 @@ from .board_api_models import req_model, res_model
 from board import db 
 from .models import Board
 from sqlalchemy.exc import DBAPIError
+from sqlalchemy import desc
+from pytz import timezone
+
 
 import uuid 
 from datetime import datetime 
@@ -19,6 +22,14 @@ authorizations = {
   }
 }
 ns = Namespace("api/board", authorizations=authorizations)
+
+
+class ConvertTime:
+  @staticmethod
+  def utc_to_kst(time: datetime):
+    return time.astimezone(timezone('Asia/Seoul')).now()    
+  
+    
 
 # 게시글 응답 클래스 (게시글 정보) - CREATE, READ, UPDATE, DELETE
 class BoardData:
@@ -37,10 +48,10 @@ class BoardData:
       'userId': self.userId,
       'title': self.title,
       'content': self.content,
-      'created_at': self.created_at.isoformat() if self.created_at else None,
-      'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-      'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None
-    }
+      'created_at': ConvertTime.utc_to_kst(self.created_at).isoformat() if self.created_at else None,
+      'updated_at': ConvertTime.utc_to_kst(self.updated_at).isoformat() if self.updated_at else None,
+      'deleted_at': ConvertTime.utc_to_kst(self.deleted_at).isoformat() if self.deleted_at else None
+    }  
     
 # 게시글 리스트 응답 클래스 - READ
 class ResponseListData:
@@ -89,7 +100,7 @@ parser.add_argument('content', type=str, required=True)
 class CreateBoard(Resource):
   @ns.doc(responses={
     200: 'Success',
-    500: 'Interner Server Error'
+    500: 'Database Error'
   })
   @ns.marshal_with(res_model)
   @ns.expect(req_model)
@@ -108,16 +119,16 @@ class CreateBoard(Resource):
       content=inp_content,
       created_at=datetime.utcnow()
     )
-    
+        
     try:
       db.session.add(board)
       db.session.commit()
       board_data = BoardData(board.id, board.user_id, board.title, board.content, board.created_at)
-      response_data = ResponseData("Create Board Success", 200, board_data)
+      response_data = ResponseData("Success", 200, board_data)
       return response_data.to_dict(), 200
-    except DBAPIError:      
+    except DBAPIError as error:      
       db.session.rollback()
-      response_data = ResponseData("Database error", 500, None)
+      response_data = ResponseData("Database error:" + str(error), 500, None)
       return response_data.to_dict(), 500
           
   def generate_unique_id(self) -> str:
@@ -130,22 +141,28 @@ class RUDBoard(Resource):
   # 게시글 조회 
   @ns.doc(response={
     200: 'Success',
-    404: 'Not Found',
+    404: 'Board Not Found',
   })
   @ns.marshal_with(res_model)
   @ns.doc(description="특정 게시글을 조회합니다.")
-  def get(self, id) -> ResponseData:
-    board = Board.query.get_or_404(id)
+  def get(self, id) -> ResponseData:    
+    # 삭제되지 않은 게시글일 경우 조회
+    board = Board.query.filter(Board.deleted_at.is_(None), Board.id == id).first()
+    
+    if board is None:
+      response_data = ResponseData("Board Not Found", 404, None)
+      return response_data.to_dict(), 404         
     
     board_data = BoardData(board.id, board.user_id, board.title, board.content, board.created_at, board.updated_at)
-    response_data = ResponseData("Get Board Success", 200, board_data)
+    response_data = ResponseData("Success", 200, board_data)
     return response_data.to_dict(), 200 
   
   # 게시글 수정
   @ns.doc(response={
     200: 'Success',
-    403: 'Unauthorized operation',
-    404: 'Not Found'
+    403: 'Unauthorized Operation',
+    404: 'Not Found',
+    500: "Database Error"
   })
   @ns.marshal_with(res_model)
   @ns.expect(req_model)
@@ -157,7 +174,13 @@ class RUDBoard(Resource):
     inp_title: str = args["title"]
     inp_content: str = args["content"]
   
-    board = Board.query.get_or_404(id)
+    # 삭제되지 않은 게시글 조회
+    board = Board.query.filter(Board.deleted_at.is_(None), Board.id == id).first()
+    
+    if board is None:
+      response_data = ResponseData("Board Not Found", 404, None)
+      return response_data.to_dict(), 404
+      
     if board.user_id == inp_user_id:
       board.title = inp_title
       board.content = inp_content
@@ -166,20 +189,20 @@ class RUDBoard(Resource):
       try:        
         db.session.commit()
         board_data = BoardData(board.id, board.user_id, board.title, board.content, board.created_at, board.updated_at)
-        response_data = ResponseData("Update Board Success", 200, board_data)
+        response_data = ResponseData("Success", 200, board_data)
         return response_data.to_dict(), 200
-      except DBAPIError:
+      except DBAPIError as error:      
         db.session.rollback()
-        response_data = ResponseData("Database error", 500, None)
-        return response_data.to_dict(), 500
+        response_data = ResponseData("Database error:" + str(error), 500, None)
+      return response_data.to_dict(), 500   
     else:
-      response_data = ResponseData("Unauthorized operation", 403, None)
+      response_data = ResponseData("Unauthorized Operation", 403, None)
       return response_data.to_dict(), 403 
   
   # 게시글 삭제 (논리적 삭제)
   @ns.doc(response={
     200: 'Success', 
-    403: 'Unauthorized operation',
+    403: 'Unauthorized Operation',
     404: 'Not Found'
   })
   @ns.marshal_with(res_model)
@@ -188,21 +211,22 @@ class RUDBoard(Resource):
   def delete(self, id) -> ResponseData:    
     inp_user_id = get_jwt_identity()
     
-    board = Board.query.get_or_404(id)
+    # 삭제되지 않은 게시글 조회
+    board = Board.query.filter(Board.deleted_at.is_(None), Board.id == id).first_or_404()
     if board.user_id == inp_user_id:
       board.deleted_at = datetime.utcnow()      
       
       try:
         db.session.commit()
         board_data = BoardData(board.id, board.user_id, board.title, board.content, board.created_at, board.updated_at, board.deleted_at)
-        response_data = ResponseData("Delete Board Success", 200, board_data)
+        response_data = ResponseData("Success", 200, board_data)
         return response_data.to_dict(), 200 
-      except DBAPIError: 
+      except DBAPIError as error:      
         db.session.rollback()
-        response_data = ResponseData("Database error", 500, None)
-        return response_data.to_dict(), 500 
+        response_data = ResponseData("Database error:" + str(error), 500, None)
+      return response_data.to_dict(), 500      
     else:
-      response_data = ResponseData("Unauthorized operation", 403, None)
+      response_data = ResponseData("Unauthorized Operation", 403, None)
       return response_data.to_dict(), 403
 
 
@@ -222,7 +246,8 @@ class GetBoards(Resource):
     inp_page = args["page"]
     inp_per_page = args["per_page"]
     
-    pagination = Board.query.filter(Board.deleted_at.is_(None)).paginate(page=inp_page, per_page=inp_per_page, error_out=False)
+    # 삭제되지 않은 게시글 최신 순 정렬
+    pagination = Board.query.filter(Board.deleted_at.is_(None)).order_by(desc(Board.created_at)).paginate(page=inp_page, per_page=inp_per_page, error_out=False)
     boards = pagination.items
     boards_data = [BoardData(board.id, board.user_id, board.title, board.content, board.created_at, board.updated_at).to_dict() for board in boards]    
     
