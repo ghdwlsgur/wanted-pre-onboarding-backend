@@ -36,7 +36,7 @@ services:
       - private_network
   mysql:
     container_name: board-mysql
-    image: mysql:8.0.19
+    image: mysql:8.0
     restart: always
     ports:
       - 3306:3306
