@@ -19,9 +19,16 @@ variable "EMAIL" {
   default = "redmax45@naver.com"
 }
 
-# terraform.tfvars
+variable "AWS_PROFILE" {
+  type    = string
+  default = "default"
+}
+
+# terraform.tfvars 파일 내 선언
 variable "MYSQL_PASSWORD" {}
 variable "JWT_SECRET_KEY" {}
+variable "AWS_ACCESS_KEY" {}
+variable "AWS_SECRET_KEY" {}
 
 locals {
   aws_ecr_repository_name = var.AWS_RESOURCE_PREFIX

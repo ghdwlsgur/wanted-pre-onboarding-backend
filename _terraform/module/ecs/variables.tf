@@ -30,6 +30,18 @@ variable "ECS_AMI" {
   type = string
 }
 
+variable "AWS_PROFILE" {
+  type = string
+}
+
+variable "AWS_ACCESS_KEY" {
+  type = string
+}
+
+variable "AWS_SECRET_KEY" {
+  type = string
+}
+
 variable "key_name" {}
 variable "private_key_openssh" {}
 variable "private_key_pem" {}
