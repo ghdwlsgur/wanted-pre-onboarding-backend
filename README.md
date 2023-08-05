@@ -175,10 +175,15 @@ curl -X 'DELETE' \
 
 ### 구현한 API의 동작을 촬영한 데모 영상 링크
 
+- https://www.youtube.com/watch?v=7g49dJH5q8A
+
 ### 구현 방법 및 이유에 대한 간략한 설명
+
+장고보다 가볍고 마이크로서비스에 많이 사용되고 있는 flask로 API 서버를 개발하고 싶었으며 flask-restx에서 지원하는 swagger-ui로 API 정의서를 자동으로 만들고 SQLAlchemy를 활용하여 직접적으로 데이터베이스를 관리하지 않게 되어 API 개발에 집중할 수 있었습니다.
 
 ### API 명세(request/response 포함)
 
+- http://board-alb-369701518.ap-northeast-2.elb.amazonaws.com/
 - http://localhost/ (Flask Swagger UI)
 
 ### AWS 아키텍처
