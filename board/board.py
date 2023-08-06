@@ -251,7 +251,7 @@ class GetBoards(Resource):
     boards = pagination.items
     boards_data = [BoardData(board.id, board.user_id, board.title, board.content, board.created_at, board.updated_at).to_dict() for board in boards]    
     
-    response_data = ResponseListData("Get Board List Success", 200, pagination.pages, pagination.total, inp_page, inp_per_page, boards_data)
+    response_data = ResponseListData("Success", 200, pagination.pages, pagination.total, inp_page, inp_per_page, boards_data)
     return response_data.to_dict(), 200 
   
   
