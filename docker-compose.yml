@@ -25,6 +25,7 @@ services:
     links:
       - mysql
     environment:
+      - TZ=Asia/Seoul
       - MYSQL_HOST=mysql
       - MYSQL_USER=root
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}

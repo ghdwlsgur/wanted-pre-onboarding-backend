@@ -6,6 +6,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 COPY . . 
 RUN chmod +x start.sh
 EXPOSE 8080
+ENV TZ=Asia/Seoul
 ENV FLASK_APP=board
 ENV FLASK_DEBUG=true
 ENV MYSQL_USER $MYSQL_USER
