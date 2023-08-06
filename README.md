@@ -183,7 +183,7 @@ curl -X 'DELETE' \
 
 ### API 명세(request/response 포함)
 
-- http://board-alb-369701518.ap-northeast-2.elb.amazonaws.com/
+- http://board-alb-1969700846.ap-northeast-2.elb.amazonaws.com/
 - http://localhost/ (Flask Swagger UI)
 
 ### AWS 아키텍처
