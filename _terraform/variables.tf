@@ -4,7 +4,7 @@ variable "ECS_AMI" {
 }
 variable "INSTANCE_TYPE" {
   type    = string
-  default = "c5a.4xlarge" # 16vCPU 32GiB
+  default = "t2.medium" # 2vCPU 4GiB
 }
 variable "AWS_REGION" {
   type    = string
