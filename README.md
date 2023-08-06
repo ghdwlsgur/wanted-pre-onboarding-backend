@@ -183,7 +183,7 @@ curl -X 'DELETE' \
 
 ### API 명세(request/response 포함)
 
-- board-alb-368374587.ap-northeast-2.elb.amazonaws.com
+- http://board-alb-368374587.ap-northeast-2.elb.amazonaws.com/
 
 ### AWS 아키텍처
 
