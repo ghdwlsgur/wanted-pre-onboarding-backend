@@ -170,9 +170,6 @@ curl -X 'DELETE' \
 
 </div>
 
-### 구현한 API의 동작을 촬영한 데모 영상 링크
-
-- https://www.youtube.com/watch?v=7g49dJH5q8A
 
 ### 구현 방법 및 이유에 대한 간략한 설명
 
